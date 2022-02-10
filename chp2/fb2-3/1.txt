@@ -1,0 +1,10 @@
+#include <2.txt>
+#include "3.txt"
+#include "."
+
+12  34
+
+34
+5
+
+  67

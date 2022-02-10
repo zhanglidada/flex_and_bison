@@ -1,0 +1,13 @@
+
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+PROJECT(FB3-1) #项目名称
+
+EXECUTE_PROCESS(COMMAND
+bison -d
+${CMAKE_CURRENT_SOURCE_DIR}/fb3-1.y)
+
+EXECUTE_PROCESS(COMMAND
+flex -o ${CMAKE_CURRENT_SOURCE_DIR}/fb3-1.lex.c
+${CMAKE_CURRENT_SOURCE_DIR}/fb3-1.l)
+
+add_executable(fb3-1 fb3-1.tab.c fb3-1.lex.c fb3-1funcs.c)
