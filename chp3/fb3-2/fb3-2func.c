@@ -438,8 +438,13 @@ dodef(struct symbol* name, struct symlist* syms, struct ast* func)
 }
 
 /***************************************************************************** 
-* purpose: 
-* notes: 
+* purpose: 具体的用户定义函数调用
+* notes: 调用流程
+  1. 计算实际参数值
+  2. 保存虚拟参数当前值，并将实际参数赋值给虚拟参数
+  3. 执行函数体，在虚拟参数使用处用实际参数替换
+  4. 虚拟参数恢复原值
+  5. 返回函数体表达式的值
 ******************************************************************************/
 static double
 calluser(struct ufncall* f)
@@ -481,7 +486,36 @@ calluser(struct ufncall* f)
     // 判断是否为节点链表
     if (args->nodetype == 'L') {
       newval[i] = eval(args->l);
+      args = args->r;  // 参数列表中的下一个元素
+    } else {
+      // 列表末尾
+      newval[i] = eval(args);
+      args = NULL;
     }
   }
 
+  // 保存虚拟参数的旧值，赋予新值
+  sl = fn->syms;
+  for (i = 0; i < nargs; i++) {
+    struct symbol *s = sl->sym;
+
+    oldval[i] = s->value;
+    s->value = newval[i];
+    sl = sl->next;
+  }
+  free(newval);
+
+  // 计算函数,使用实际参数的值替换虚拟参数的值
+  v = eval(fn->func);
+
+  // 恢复虚拟参数的值
+  sl = fn->syms;
+  for (i = 0; i < nargs; i++) {
+    struct symbol *s = sl->sym;
+
+    s->value = oldval[i];
+    sl = sl->next;
+  }
+  free(oldval);
+  return v;
 }
