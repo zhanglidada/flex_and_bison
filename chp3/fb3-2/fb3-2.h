@@ -23,8 +23,8 @@ void yyerror(char* s, ...);
 struct symbol { /* 变量名 */
   char*           name;
   double          value;  // 保存符号的值
-  struct ast*     func;  // 代表函数体的抽象语法树，指向抽象语法树表述的该函数的用户代码
-  struct symlist* syms;  // 指向任意多个虚拟参数列表
+  struct ast*     func;  // 指向抽象语法树表述的该函数的用户代码，代表函数体的抽象语法树
+  struct symlist* syms;  // 指向任意多个虚拟参数列表，这些参数也是符号
 };
 
 /* 固定大小的简单符号表 */
@@ -42,7 +42,7 @@ struct symlist {
   struct symlist* next;  // 下一个符号表
 };
 
-// 创建符号链表
+// 创建符号
 struct symlist* newsymlist(struct symbol *sym, struct symlist *next);
 // 释放符号
 void symlistfree(struct symlist* sl);
@@ -70,7 +70,7 @@ enum bifs {  // 内置函数
 
 /***************************************************************************** 
 * purpose: 抽象语法树节点(Abstract Syntax Tree)
-* notes: 所有节点都有公共的初始nodetype
+* notes: 所有节点都有公共的初始nodetype，遍历树的节点，根据节点nodetype值判断类型
 ******************************************************************************/
 struct ast {
   int nodetype;
@@ -127,6 +127,10 @@ struct symref {
   struct symbol* s;  // 指向符号表中特定符号的指针
 };
 
+/***************************************************************************** 
+* purpose: 赋值
+* notes: 
+******************************************************************************/
 struct symasgn {
   int nodetype; // 类型 =
   struct symbol* s;  // 指向被赋值符号的指针

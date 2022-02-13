@@ -115,4 +115,9 @@ bin-release/
 .externalToolBuilders
 .model
 
+#bison gen files ignore
+*.lex.c
+*.tab.c
+*.tab.h
+
 # End of https://www.toptal.com/developers/gitignore/api/c,c++,cmake,flex

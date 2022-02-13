@@ -20,8 +20,7 @@ static double calluser(struct ufncall*);
 
 
 /***************************************************************************** 
-* purpose: 符号表
-* notes: hash一个字符串
+* purpose: hash一个字符串
 ******************************************************************************/
 static unsigned
 symhash(char* sym)
@@ -35,6 +34,10 @@ symhash(char* sym)
   return hash;
 }
 
+/***************************************************************************** 
+* purpose: 计算字符串的hash值并查找其所在符号表中的位置
+* notes: 
+******************************************************************************/
 struct symbol*
 lookup(char* sym)
 {
@@ -518,4 +521,85 @@ calluser(struct ufncall* f)
   }
   free(oldval);
   return v;
+}
+
+void
+yyerror(char *s, ...)
+{
+  va_list ap;
+  va_start(ap, s);
+
+  fprintf(stderr, "%d: error: ", yylineno);
+  vfprintf(stderr, s, ap);
+  fprintf(stderr, "\n");
+}
+
+int
+main()
+{
+  printf("> "); 
+  return yyparse();
+}
+
+
+/* debugging: dump out an AST */
+int debug = 0;
+void
+dumpast(struct ast *a, int level)
+{
+
+  printf("%*s", 2*level, "");	/* indent to this level */
+  level++;
+
+  if(!a) {
+    printf("NULL\n");
+    return;
+  }
+
+  switch(a->nodetype) {
+    /* constant */
+  case 'K': printf("number %4.4g\n", ((struct numval *)a)->number); break;
+
+    /* name reference */
+  case 'N': printf("ref %s\n", ((struct symref *)a)->s->name); break;
+
+    /* assignment */
+  case '=': printf("= %s\n", ((struct symref *)a)->s->name);
+    dumpast( ((struct symasgn *)a)->v, level); return;
+
+    /* expressions */
+  case '+': case '-': case '*': case '/': case 'L':
+  case '1': case '2': case '3':
+  case '4': case '5': case '6': 
+    printf("binop %c\n", a->nodetype);
+    dumpast(a->l, level);
+    dumpast(a->r, level);
+    return;
+
+  case '|': case 'M': 
+    printf("unop %c\n", a->nodetype);
+    dumpast(a->l, level);
+    return;
+
+  case 'I': case 'W':
+    printf("flow %c\n", a->nodetype);
+    dumpast( ((struct flow *)a)->cond, level);
+    if( ((struct flow *)a)->tl)
+      dumpast( ((struct flow *)a)->tl, level);
+    if( ((struct flow *)a)->el)
+      dumpast( ((struct flow *)a)->el, level);
+    return;
+	              
+  case 'F':
+    printf("builtin %d\n", ((struct fncall *)a)->functype);
+    dumpast(a->l, level);
+    return;
+
+  case 'C': printf("call %s\n", ((struct ufncall *)a)->s->name);
+    dumpast(a->l, level);
+    return;
+
+  default: printf("bad %c\n", a->nodetype);
+    return;
+  }
 }

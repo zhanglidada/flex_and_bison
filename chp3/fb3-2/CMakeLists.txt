@@ -1,0 +1,15 @@
+# 存在问题
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+PROJECT(FB3-2) #项目名称
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+EXECUTE_PROCESS(COMMAND
+bison -o ${CMAKE_CURRENT_SOURCE_DIR}/include/fb3-2.tab.h ${CMAKE_CURRENT_SOURCE_DIR}/fb3-2.tab.c
+${CMAKE_CURRENT_SOURCE_DIR}/fb3-2.y)
+
+EXECUTE_PROCESS(COMMAND
+flex -o ${CMAKE_CURRENT_SOURCE_DIR}/fb3-2.lex.c
+${CMAKE_CURRENT_SOURCE_DIR}/fb3-2.l)
+
+add_executable(fb3-2 fb3-2.tab.c fb3-2.lex.c fb3-2func.c)
